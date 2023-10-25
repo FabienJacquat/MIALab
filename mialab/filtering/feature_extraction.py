@@ -40,8 +40,6 @@ class AtlasCoordinates(fltr.Filter):
         coords[..., 2] = np.arange(z)[np.newaxis, np.newaxis, :]
         coords[..., 3] = 1
 
-
-        #zebi
         # reshape such that each voxel is one row
         lin_coords = np.reshape(coords, [coords.shape[0] * coords.shape[1] * coords.shape[2], 4])
 
