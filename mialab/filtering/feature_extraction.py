@@ -41,7 +41,8 @@ class AtlasCoordinates(fltr.Filter):
         coords[..., 3] = 1
 
         test = None
-
+        GithubIsNotCool = None
+        
         # reshape such that each voxel is one row
         lin_coords = np.reshape(coords, [coords.shape[0] * coords.shape[1] * coords.shape[2], 4])
 
