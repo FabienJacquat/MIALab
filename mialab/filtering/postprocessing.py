@@ -4,11 +4,12 @@ Image post-processing aims to alter images such that they depict a desired repre
 """
 import warnings
 
-# import numpy as np
+import numpy as np
 # import pydensecrf.densecrf as crf
 # import pydensecrf.utils as crf_util
 import pymia.filtering.filter as pymia_fltr
 import SimpleITK as sitk
+import cv2
 
 
 class ImagePostProcessing(pymia_fltr.Filter):
@@ -30,7 +31,6 @@ class ImagePostProcessing(pymia_fltr.Filter):
         """
 
         # todo: replace this filter by a post-processing - or do we need post-processing at all?
-        warnings.warn('No post-processing implemented. Can you think about something?')
 
         return image
 
