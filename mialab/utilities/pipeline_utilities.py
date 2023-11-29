@@ -274,11 +274,10 @@ def post_process(img: structure.BrainImage, segmentation: sitk.Image, probabilit
     pipeline = fltr.FilterPipeline()
     if kwargs.get('simple_post', False):
         pipeline.add_filter(fltr_postp.ImagePostProcessing())
-    if kwargs.get('crf_post', False):
-        pipeline.add_filter(fltr_postp.DenseCRF())
-        pipeline.set_param(fltr_postp.DenseCRFParams(img.images[structure.BrainImageTypes.T1w],
-                                                     img.images[structure.BrainImageTypes.T2w],
-                                                     probability), len(pipeline.filters) - 1)
+    if kwargs.get('skullstrip_post', False):
+        pipeline.add_filter(fltr_postp.SkullStripping())
+        pipeline.set_param(fltr_postp.SkullStrippingParameters(img.images[structure.BrainImageTypes.BrainMask]),
+                              len(pipeline.filters) - 1)
 
     return pipeline.execute(segmentation)
 
