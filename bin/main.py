@@ -7,7 +7,6 @@ import datetime
 import os
 import sys
 import timeit
-import warnings
 
 import SimpleITK as sitk
 import sklearn.ensemble as sk_ensemble
@@ -31,7 +30,7 @@ LOADING_KEYS = [structure.BrainImageTypes.T1w,
                 structure.BrainImageTypes.GroundTruth,
                 structure.BrainImageTypes.BrainMask,
                 structure.BrainImageTypes.RegistrationTransform]  # the list of data we will load
-
+np.random.seed(1)
 
 def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_dir: str):
     """Brain tissue segmentation using decision forests.
@@ -60,7 +59,7 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
                                           futil.DataDirectoryFilter())
     pre_process_params = {'skullstrip_pre': True,
                           'normalization_pre': True,
-                          'registration_pre': True,
+                          'registration_pre': False,
                           'coordinates_feature': True,
                           'intensity_feature': True,
                           'gradient_intensity_feature': True}
@@ -72,12 +71,25 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
     data_train = np.concatenate([img.feature_matrix[0] for img in images])
     labels_train = np.concatenate([img.feature_matrix[1] for img in images]).squeeze()
 
-    forest = sk_ensemble.RandomForestClassifier(max_features=images[0].feature_matrix[0].shape[1],
-                                                n_estimators=10,
-                                                max_depth=25)
+    selected_classifier = 'forest'
+
+    if selected_classifier == 'forest':
+        classifier = sk_ensemble.RandomForestClassifier(max_features=images[0].feature_matrix[0].shape[1],
+                                                    n_estimators=100,
+                                                    max_depth=10,
+                                                    class_weight=[{0: 1.1}, {1: 1.2}, {2: 1.3}, {3: 1.4}, {4: 1.5}])
+        return classifier
+
+    elif selected_classifier == 'extremely':
+        classifier = sk_ensemble.ExtraTreesClassifier(max_features=images[0].feature_matrix[0].shape[1],
+                                                     n_estimators=100,
+                                                     max_depth=10,
+                                                     class_weight=[{0: 1.1}, {1: 1.2}, {2: 1.3}, {3: 1.4}, {4: 1.5}])
+        return classifier
+
 
     start_time = timeit.default_timer()
-    forest.fit(data_train, labels_train)
+    classifier.fit(data_train, labels_train)
     print(' Time elapsed:', timeit.default_timer() - start_time, 's')
 
     # create a result directory with timestamp
@@ -107,8 +119,8 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
         print('-' * 10, 'Testing', img.id_)
 
         start_time = timeit.default_timer()
-        predictions = forest.predict(img.feature_matrix[0])
-        probabilities = forest.predict_proba(img.feature_matrix[0])
+        predictions = classifier.predict(img.feature_matrix[0])
+        probabilities = classifier.predict_proba(img.feature_matrix[0])
         print(' Time elapsed:', timeit.default_timer() - start_time, 's')
 
         # convert prediction and probabilities back to SimpleITK images
