@@ -10,8 +10,6 @@ def main():
     # List of filenames
     filenames = ['result_summary.csv', 'result_summary_PP.csv']
 
-    # Plot the average data for max_depth
-
     # Create a list for max_depth values
     max_depth = [5, 10, 20, 50, 75, 100, 110, 120, 140]
 
@@ -66,15 +64,19 @@ def main():
                         else:
                             hdrfdst95_data_dict[label].append(0)  # Append 0 if no data is found
 
+        # Plot the average data for max_depth
         # Plot the combined data for DICE and JACRD in a separate figure
         plt.figure(figsize=(12, 6))
 
         # Subplot for DICE
         plt.subplot(1, 2, 1)
         for label, data in dice_data_dict.items():
-            plt.plot(max_depth[1:6], data[1:6], label=label)
+            if filename == 'result_summary.csv':
+                plt.plot(max_depth[0:3], data[0:3], label=label)
+            else:
+                plt.plot(max_depth[0:3], data[0:3], label=label)
 
-        plt.title(f'Average Dice coefficient per Max depth ({filename})')
+        plt.title(f'Average Dice coefficient per Max depth')
         plt.xlabel('Max depth')
         plt.ylabel('Average Dice coefficient')
         plt.legend()
@@ -83,13 +85,22 @@ def main():
         # Subplot for JACRD
         plt.subplot(1, 2, 2)
         for label, data in jacrd_data_dict.items():
-            plt.plot(max_depth[1:6], data[1:6], label=label)
+            if filename == 'result_summary.csv':
+                plt.plot(max_depth[0:3], data[0:3], label=label)
+            else:
+                plt.plot(max_depth[0:3], data[0:3], label=label)
 
-        plt.title(f'Average Jaccard coefficient per Max depth ({filename})')
+        plt.title(f'Average Jaccard coefficient per Max depth')
         plt.xlabel('Max depth')
         plt.ylabel('Average Jaccard coefficient')
         plt.legend()
         plt.ylim(0, 0.9)  # Set the y-axis upper limit
+
+        # Add a title for the entire figure
+        if filename == 'result_summary.csv':
+            plt.suptitle('Result without post-processing')
+        else:
+            plt.suptitle('Result with post-processing')
 
         plt.tight_layout()
 
@@ -99,9 +110,12 @@ def main():
         # Subplot for HDRFDST
         plt.subplot(1, 2, 1)
         for label, data in hdrfdst_data_dict.items():
-            plt.plot(max_depth[1:6], data[1:6], label=label)
+            if filename == 'result_summary.csv':
+                plt.plot(max_depth[0:3], data[0:3], label=label)
+            else:
+                plt.plot(max_depth[0:3], data[0:3], label=label)
 
-        plt.title(f'Average Hausdorff distance per Max depth ({filename})')
+        plt.title(f'Average Hausdorff distance per Max depth')
         plt.xlabel('Max depth')
         plt.ylabel('Average Hausdorff distance')
         plt.legend()
@@ -110,13 +124,22 @@ def main():
         # Subplot for HDRFDST95
         plt.subplot(1, 2, 2)
         for label, data in hdrfdst95_data_dict.items():
-            plt.plot(max_depth[1:6], data[1:6], label=label)
+            if filename == 'result_summary.csv':
+                plt.plot(max_depth[0:3], data[0:3], label=label)
+            else:
+                plt.plot(max_depth[0:3], data[0:3], label=label)
 
-        plt.title(f'Average Hausdorff distance 95th per Max depth ({filename})')
+        plt.title(f'Average Hausdorff distance 95th per Max depth')
         plt.xlabel('Max depth')
         plt.ylabel('Average Hausdorff distance 95th percentile')
         plt.legend()
         plt.ylim(0, 90)  # Set the y-axis upper limit
+
+        # Add a title for the entire figure
+        if filename == 'result_summary.csv':
+            plt.suptitle('Result without post-processing')
+        else:
+            plt.suptitle('Result with post-processing')
 
         plt.tight_layout()
 
@@ -132,9 +155,12 @@ def main():
         # Subplot for DICE
         plt.subplot(1, 2, 1)
         for label, data in dice_data_dict.items():
-            plt.plot(nb_estimators[4:8], data[4:8], label=label)
+            if filename == 'result_summary.csv':
+                plt.plot(nb_estimators[0:3], data[0:3], label=label)
+            else:
+                plt.plot(nb_estimators[0:3], data[0:3], label=label)
 
-        plt.title(f'Average Dice coefficient per Numbers of estimators ({filename})')
+        plt.title(f'Average Dice coefficient per Numbers of estimators')
         plt.xlabel('Numbers of estimators')
         plt.ylabel('Average Dice coefficient')
         plt.legend()
@@ -143,13 +169,22 @@ def main():
         # Subplot for JACRD
         plt.subplot(1, 2, 2)
         for label, data in jacrd_data_dict.items():
-            plt.plot(nb_estimators[4:8], data[4:8], label=label)
+            if filename == 'result_summary.csv':
+                plt.plot(nb_estimators[0:3], data[0:3], label=label)
+            else:
+                plt.plot(nb_estimators[0:3], data[0:3], label=label)
 
-        plt.title(f'Average Jaccard coefficient per Numbers of estimators ({filename})')
+        plt.title(f'Average Jaccard coefficient per Numbers of estimators')
         plt.xlabel('Numbers of estimators')
         plt.ylabel('Average Jaccard coefficient')
         plt.legend()
         plt.ylim(0, 0.9)  # Set the y-axis upper limit
+
+        # Add a title for the entire figure
+        if filename == 'result_summary.csv':
+            plt.suptitle('Result without post-processing')
+        else:
+            plt.suptitle('Result with post-processing')
 
         plt.tight_layout()
 
@@ -159,9 +194,12 @@ def main():
         # Subplot for HDRFDST
         plt.subplot(1, 2, 1)
         for label, data in hdrfdst_data_dict.items():
-            plt.plot(nb_estimators[4:8], data[4:8], label=label)
+            if filename == 'result_summary.csv':
+                plt.plot(nb_estimators[0:3], data[0:3], label=label)
+            else:
+                plt.plot(nb_estimators[0:3], data[0:3], label=label)
 
-        plt.title(f'Average Hausdorff distance per Numbers of estimators ({filename})')
+        plt.title(f'Average Hausdorff distance per Numbers of estimators')
         plt.xlabel('Numbers of estimators')
         plt.ylabel('Average Hausdorff distance')
         plt.legend()
@@ -170,13 +208,23 @@ def main():
         # Subplot for HDRFDST95
         plt.subplot(1, 2, 2)
         for label, data in hdrfdst95_data_dict.items():
-            plt.plot(nb_estimators[4:8], data[4:8], label=label)
+            if filename == 'result_summary.csv':
+                plt.plot(nb_estimators[0:3], data[0:3], label=label)
+            else:
+                plt.plot(nb_estimators[0:3], data[0:3], label=label)
 
-        plt.title(f'Average Hausdorff distance 95th per Numbers of estimators ({filename})')
+
+        plt.title(f'Average Hausdorff distance 95th per Numbers of estimators')
         plt.xlabel('Numbers of estimators')
         plt.ylabel('Average Hausdorff distance 95th percentile')
         plt.legend()
         plt.ylim(0, 90)  # Set the y-axis upper limit
+
+        # Add a title for the entire figure
+        if filename == 'result_summary.csv':
+            plt.suptitle('Result without post-processing')
+        else:
+            plt.suptitle('Result with post-processing')
 
         plt.tight_layout()
 
@@ -192,9 +240,9 @@ def main():
         # Subplot for DICE
         plt.subplot(1, 2, 1)
         for label, data in dice_data_dict.items():
-            plt.plot(class_weights, data[4:7], label=label)  # Adjust the range [4:7] based on your data length
+            plt.plot(class_weights, data[0:3], label=label)  # Adjust the range [4:7] based on your data length
 
-        plt.title(f'Average Dice coefficient per Class Weights ({filename})')
+        plt.title(f'Average Dice coefficient per Class Weights')
         plt.xlabel('Class Weights')
         plt.gca().xaxis.labelpad = 10
         plt.ylabel('Average Dice coefficient')
@@ -204,14 +252,23 @@ def main():
         # Subplot for JACRD
         plt.subplot(1, 2, 2)
         for label, data in jacrd_data_dict.items():
-            plt.plot(class_weights, data[4:7], label=label)  # Adjust the range [4:7] based on your data length
+            if filename == 'result_summary.csv':
+                plt.plot(class_weights, data[0:3], label=label)
+            else:
+                plt.plot(class_weights, data[0:3], label=label)
 
-        plt.title(f'Average Jaccard coefficient per Class Weights ({filename})')
+        plt.title(f'Average Jaccard coefficient per Class Weights')
         plt.xlabel('Class Weights')
         plt.gca().xaxis.labelpad = 10
         plt.ylabel('Average Jaccard coefficient')
         plt.legend()
         plt.ylim(0, 0.9)  # Set the y-axis upper limit
+
+        # Add a title for the entire figure
+        if filename == 'result_summary.csv':
+            plt.suptitle('Result without post-processing')
+        else:
+            plt.suptitle('Result with post-processing')
 
         plt.tight_layout()
 
@@ -221,9 +278,12 @@ def main():
         # Subplot for HDRFDST
         plt.subplot(1, 2, 1)
         for label, data in hdrfdst_data_dict.items():
-            plt.plot(class_weights, data[4:7], label=label)  # Adjust the range [4:7] based on your data length
+            if filename == 'result_summary.csv':
+                plt.plot(class_weights, data[0:3], label=label)
+            else:
+                plt.plot(class_weights, data[0:3], label=label)
 
-        plt.title(f'Average Hausdorff distance per Class Weights ({filename})')
+        plt.title(f'Average Hausdorff distance per Class Weights')
         plt.xlabel('Class Weights')
         plt.gca().xaxis.labelpad = 10
         plt.ylabel('Average Hausdorff distance')
@@ -233,14 +293,25 @@ def main():
         # Subplot for HDRFDST95
         plt.subplot(1, 2, 2)
         for label, data in hdrfdst95_data_dict.items():
-            plt.plot(class_weights, data[4:7], label=label)  # Adjust the range [4:7] based on your data length
+            # Add a title for the entire figure
+            if filename == 'result_summary.csv':
+                plt.plot(class_weights, data[0:3], label=label)
+            else:
+                plt.plot(class_weights, data[0:3], label=label)
 
-        plt.title(f'Average Hausdorff distance 95th per Class Weights ({filename})')
+
+        plt.title(f'Average Hausdorff distance 95th per Class Weights')
         plt.xlabel('Class Weights')
         plt.gca().xaxis.labelpad = 10
         plt.ylabel('Average Hausdorff distance 95th percentile')
         plt.legend()
         plt.ylim(0, 90)  # Set the y-axis upper limit
+
+        # Add a title for the entire figure
+        if filename == 'result_summary.csv':
+            plt.suptitle('Result without post-processing')
+        else:
+            plt.suptitle('Result with post-processing')
 
         plt.tight_layout()
 
