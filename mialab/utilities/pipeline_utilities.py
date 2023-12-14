@@ -274,10 +274,8 @@ def post_process(img: structure.BrainImage, segmentation: sitk.Image, probabilit
     pipeline = fltr.FilterPipeline()
     if kwargs.get('simple_post', False):
         pipeline.add_filter(fltr_postp.ImagePostProcessing())
-    if kwargs.get('skullstrip_post', False):
-        pipeline.add_filter(fltr_postp.SkullStripping())
-        pipeline.set_param(fltr_postp.SkullStrippingParameters(img.images[structure.BrainImageTypes.BrainMask]),
-                              len(pipeline.filters) - 1)
+        pipeline.set_param(fltr_postp.ImagePostProcessingParameters(segmentation),
+                           len(pipeline.filters) - 1)
 
     return pipeline.execute(segmentation)
 
@@ -290,7 +288,12 @@ def init_evaluator() -> eval_.Evaluator:
     """
 
     # initialize metrics
-    metrics = [metric.DiceCoefficient(), metric.HausdorffDistance(), metric.JaccardCoefficient()]
+    metrics = [
+        metric.DiceCoefficient(),
+        metric.HausdorffDistance(),
+        metric.JaccardCoefficient(),
+        metric.HausdorffDistance(percentile=95, metric='HDRFDST95')
+    ]
     # todo: add hausdorff distance, 95th percentile (see metric.HausdorffDistance)
 
     # define the labels to evaluate

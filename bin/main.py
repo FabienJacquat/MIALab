@@ -7,7 +7,6 @@ import datetime
 import os
 import sys
 import timeit
-import warnings
 
 import SimpleITK as sitk
 import sklearn.ensemble as sk_ensemble
@@ -31,7 +30,7 @@ LOADING_KEYS = [structure.BrainImageTypes.T1w,
                 structure.BrainImageTypes.GroundTruth,
                 structure.BrainImageTypes.BrainMask,
                 structure.BrainImageTypes.RegistrationTransform]  # the list of data we will load
-
+np.random.seed(1)
 
 def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_dir: str):
     """Brain tissue segmentation using decision forests.
@@ -60,7 +59,7 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
                                           futil.DataDirectoryFilter())
     pre_process_params = {'skullstrip_pre': True,
                           'normalization_pre': True,
-                          'registration_pre': True,
+                          'registration_pre': False,
                           'coordinates_feature': True,
                           'intensity_feature': True,
                           'gradient_intensity_feature': True}
@@ -72,13 +71,44 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
     data_train = np.concatenate([img.feature_matrix[0] for img in images])
     labels_train = np.concatenate([img.feature_matrix[1] for img in images]).squeeze()
 
-    forest = sk_ensemble.RandomForestClassifier(max_features=images[0].feature_matrix[0].shape[1],
-                                                n_estimators=100,
-                                                max_depth=10,
-                                                class_weight=[{0: 1, 1: 5}, {0: 1, 1: 1}, {0: 1, 1: 1}, {0: 1, 1: 1}, {0: 1, 1: 1}])
+    # labels_train is your array of class labels
+    unique_labels, counts = np.unique(labels_train, return_counts=True)
+
+    # Calculate the total number of instances
+    total_instances = len(labels_train)
+
+    rmin = 1.0
+    rmax = 15.12
+    tmin = 1.0
+    tmax = 1.5
+
+    # Print the count and percentage for each class
+    for label, count in zip(unique_labels, counts):
+        percentage = (count / total_instances)
+        classweight = (29958 / count)
+        normalized_weights = ((classweight - rmin) / (rmax - rmin)) * (tmax - tmin) + tmin
+
+        print(
+            f"Class {label}: {count} data | ({percentage:.2f}%) percentage | ({classweight:.2f}) class weight | ({normalized_weights:.2f}) normalized weight")
+
+    selected_classifier = 'forest'
+
+    if selected_classifier == 'forest':
+        class_weights = {1: 1, 2: 1.01, 3: 1.16, 4: 1.5, 5: 1.16}
+        classifier = sk_ensemble.RandomForestClassifier(max_features=images[0].feature_matrix[0].shape[1],
+                                                        n_estimators=100,
+                                                        max_depth=25,
+                                                        class_weight=class_weights)
+
+    elif selected_classifier == 'extremely':
+        class_weights = {1: 1, 2: 1.01, 3: 1.16, 4: 1.5, 5: 1.16}
+        classifier = sk_ensemble.ExtraTreesClassifier(max_features=images[0].feature_matrix[0].shape[1],
+                                                      n_estimators=100,
+                                                      max_depth=25,
+                                                      class_weight=None)
 
     start_time = timeit.default_timer()
-    forest.fit(data_train, labels_train)
+    classifier.fit(data_train, labels_train)
     print(' Time elapsed:', timeit.default_timer() - start_time, 's')
 
     # create a result directory with timestamp
@@ -108,8 +138,8 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
         print('-' * 10, 'Testing', img.id_)
 
         start_time = timeit.default_timer()
-        predictions = forest.predict(img.feature_matrix[0])
-        probabilities = forest.predict_proba(img.feature_matrix[0])
+        predictions = classifier.predict(img.feature_matrix[0])
+        probabilities = classifier.predict_proba(img.feature_matrix[0])
         print(' Time elapsed:', timeit.default_timer() - start_time, 's')
 
         # convert prediction and probabilities back to SimpleITK images
@@ -125,6 +155,7 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
 
     # post-process segmentation and evaluate with post-processing
     post_process_params = {'simple_post': True}
+
     images_post_processed = putil.post_process_batch(images_test, images_prediction, images_probabilities,
                                                      post_process_params, multi_process=True)
 
@@ -132,28 +163,51 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
         evaluator.evaluate(images_post_processed[i], img.images[structure.BrainImageTypes.GroundTruth],
                            img.id_ + '-PP')
 
-        # save results
-        sitk.WriteImage(images_prediction[i], os.path.join(result_dir, images_test[i].id_ + '_SEG.mha'), True)
-        sitk.WriteImage(images_post_processed[i], os.path.join(result_dir, images_test[i].id_ + '_SEG-PP.mha'), True)
-
-    # use two writers to report the results
-    os.makedirs(result_dir, exist_ok=True)  # generate result directory, if it does not exists
+    # generate result directory, if it does not exists
+    os.makedirs(result_dir, exist_ok=True)
     result_file = os.path.join(result_dir, 'results.csv')
     writer.CSVWriter(result_file).write(evaluator.results)
-
     print('\nSubject-wise results...')
     writer.ConsoleWriter().write(evaluator.results)
 
-    # report also mean and standard deviation among all subjects
-    result_summary_file = os.path.join(result_dir, 'results_summary.csv')
+    # Create result_summary.csv for '_SEG.mha' files
+    result_summary_file = os.path.join(result_dir, 'result_summary.csv')
+
+    # Create result_summary_PP.csv for '_SEG-PP.mha' files
+    result_summary_pp_file = os.path.join(result_dir, 'result_summary_PP.csv')
+
+    evaluator.results.clear()
+
+    # Evaluate and save results for segmentation images
+    for i, img in enumerate(images_test):
+        # Evaluate segmentation without post-processing
+        evaluator.evaluate(images_prediction[i], img.images[structure.BrainImageTypes.GroundTruth], img.id_)
+
+        # Save results for segmentation images
+        sitk.WriteImage(images_prediction[i], os.path.join(result_dir, images_test[i].id_ + '_SEG.mha'), True)
+
+    # Write statistics for segmentation images to CSV
     functions = {'MEAN': np.mean, 'STD': np.std}
     writer.CSVStatisticsWriter(result_summary_file, functions=functions).write(evaluator.results)
-    print('\nAggregated statistic results...')
+    print('\nIndividual statistic results for segmentation images...')
     writer.ConsoleStatisticsWriter(functions=functions).write(evaluator.results)
 
-    # clear results such that the evaluator is ready for the next evaluation
-    evaluator.clear()
+    # Clear results for post-processed images
+    evaluator.results.clear()
 
+    # Evaluate and save results for segmentation images
+    for i, img in enumerate(images_test):
+        # Evaluate segmentation without post-processing
+        evaluator.evaluate(images_post_processed[i], img.images[structure.BrainImageTypes.GroundTruth], img.id_)
+
+        # Save results for segmentation images
+        sitk.WriteImage(images_post_processed[i], os.path.join(result_dir, images_test[i].id_ + '_SEG-PP.mha'), True)
+
+    # Write statistics for segmentation images to CSV
+    functions = {'MEAN': np.mean, 'STD': np.std}
+    writer.CSVStatisticsWriter(result_summary_pp_file, functions=functions).write(evaluator.results)
+    print('\nIndividual statistic results for segmentation images...')
+    writer.ConsoleStatisticsWriter(functions=functions).write(evaluator.results)
 
 if __name__ == "__main__":
     """The program's entry point."""

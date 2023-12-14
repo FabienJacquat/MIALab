@@ -14,14 +14,14 @@ import cv2
 class ImagePostProcessingParameters(pymia_fltr.FilterParams):
     """Image post-processing parameters."""
 
-    def __init__(self, image_prediction: sitk.Image):
+    def __init__(self, segmentation: sitk.Image):
         """Initializes a new instance of the ImagePostProcessingParameters
 
         Args:
             image (sitk.Image): The image.
             img_mask (sitk.Image): The brain mask image.
         """
-        self.image_prediction = image_prediction
+        self.segmentation = segmentation
 
 class ImagePostProcessing(pymia_fltr.Filter):
     """Represents a post-processing filter."""
@@ -30,7 +30,7 @@ class ImagePostProcessing(pymia_fltr.Filter):
         """Initializes a new instance of the ImagePostProcessing class."""
         super().__init__()
 
-    def execute(self, multiClass_image: sitk.Image, params: pymia_fltr.FilterParams = None) -> sitk.Image:
+    def execute(self, multiclass_image: sitk.Image, params: pymia_fltr.FilterParams = None) -> sitk.Image:
         """Registers an image.
 
         Args:
@@ -42,7 +42,7 @@ class ImagePostProcessing(pymia_fltr.Filter):
         """
 
         # todo: replace this filter by a post-processing - or do we need post-processing at all?
-        multiclass_image = params.image_prediction
+        multiclass_image = params.segmentation
 
         # Calculate class volumes
         class_values = np.unique(sitk.GetArrayFromImage(multiclass_image))
@@ -50,7 +50,7 @@ class ImagePostProcessing(pymia_fltr.Filter):
 
         for class_val in class_values:
             # Count the number of pixels/voxels for each class
-            class_mask = multiclass_image == class_val
+            class_mask = sitk.GetArrayFromImage(multiclass_image) == class_val
             volume = np.sum(class_mask)
             class_volumes[class_val] = volume
 
@@ -58,23 +58,26 @@ class ImagePostProcessing(pymia_fltr.Filter):
         sorted_classes = sorted(class_volumes, key=class_volumes.get, reverse=True)
 
         # Create an empty image to store labeled components
-        labeled_components = sitk.Image(multiclass_image.GetSize(), sitk.sitkUInt16)
-
-        # Define the connectivity you want (either 4-connectivity or 8-connectivity)
-        connectivity = 4
+        labeled_components = sitk.Image(multiclass_image.GetSize(), sitk.sitkUInt32)
+        labeled_components = sitk.Resample(labeled_components, multiclass_image, sitk.Transform(), sitk.sitkLinear, 0.0, labeled_components.GetPixelID())
 
         # Label connected components for each class separately
-        for class_value in sorted_classes:
-            # Create a binary image for the current class
-            binary_class_image = sitk.BinaryThreshold(multiclass_image, class_value, class_value)
+        for class_val in sorted_classes:
+            if class_val != 0:
+                # Create a binary image for the current class
+                binary_class_image = (multiclass_image == class_val)
 
-            # Label connected components for the current class
-            labeled_class_components = sitk.ConnectedComponent(binary_class_image, connectivity)
+                # Label connected components for the current class
+                connected_components = sitk.ConnectedComponent(binary_class_image)
+                sorted_connected_components = sitk.RelabelComponent(connected_components, sortByObjectSize=True)
 
-            # Assign labels for the current class to the output image
-            labeled_components = labeled_components + (
-                        labeled_class_components * (labeled_class_components > 0)) * class_value
+                largest_component_binary_image = sitk.Image(multiclass_image.GetSize(), sitk.sitkUInt32)
+                for i in range(1, 6):
+                    largest_component_binary_image = sitk.Cast((sorted_connected_components == i), sitk.sitkUInt32)
 
+                    # Assign labels for the current class to the output image
+                    labeled_components += sitk.Mask(labeled_components, largest_component_binary_image) + \
+                                         (largest_component_binary_image * class_val)
 
         return labeled_components
 
@@ -97,40 +100,6 @@ class SkullStrippingParameters(pymia_fltr.FilterParams):
             img_mask (sitk.Image): The brain mask image.
         """
         self.img_mask = img_mask
-
-
-class SkullStripping(pymia_fltr.Filter):
-    """Represents a skull-stripping filter."""
-
-    def __init__(self):
-        """Initializes a new instance of the SkullStripping class."""
-        super().__init__()
-
-    def execute(self, image_prediction: sitk.Image, params: SkullStrippingParameters = None) -> sitk.Image:
-        """Executes a skull stripping on an image.
-
-        Args:
-            image (sitk.Image): The image.
-            params (SkullStrippingParameters): The parameters with the brain mask.
-
-        Returns:
-            sitk.Image: The normalized image.
-        """
-        mask = params.img_mask  # the brain mask
-
-        # todo: remove the skull from the image by using the brain mask
-        image_prediction = sitk.Mask(image_prediction, mask)
-
-        return image_prediction
-
-    def __str__(self):
-        """Gets a printable string representation.
-
-        Returns:
-            str: String representation.
-        """
-        return 'SkullStripping:\n' \
-            .format(self=self)
 
 # class DenseCRFParams(pymia_fltr.FilterParams):
 #     """Dense CRF parameters."""
