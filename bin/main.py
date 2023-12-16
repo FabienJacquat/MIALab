@@ -91,18 +91,18 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
         print(
             f"Class {label}: {count} data | ({percentage:.2f}%) percentage | ({classweight:.2f}) class weight | ({normalized_weights:.2f}) normalized weight")
 
-    selected_classifier = 'forest'
-    class_weights = {1: 1, 2: 1.01, 3: 1.16, 4: 1.5, 5: 1.16}
+    selected_classifier = 'extremely'
+    class_weights = {1: 1, 2: 1.25, 3: 5.54, 4: 15.12, 5: 5.46}
 
     if selected_classifier == 'forest':
         classifier = sk_ensemble.RandomForestClassifier(max_features=images[0].feature_matrix[0].shape[1],
-                                                        n_estimators=300,
-                                                        max_depth=25,
-                                                        class_weight=None)
+                                                        n_estimators=500,
+                                                        max_depth=150,
+                                                        class_weight=class_weights)
 
     elif selected_classifier == 'extremely':
         classifier = sk_ensemble.ExtraTreesClassifier(max_features=images[0].feature_matrix[0].shape[1],
-                                                      n_estimators=300,
+                                                      n_estimators=100,
                                                       max_depth=25,
                                                       class_weight=None)
 

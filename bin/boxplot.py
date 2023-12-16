@@ -8,7 +8,7 @@ def main():
 
     directory_path = r'C:\Users\pierr\Desktop\Cours\BME3\Medical_Image_Analysis_Lab\MIALab_Fabien\bin\mia-result'
 
-    result_name = '2023-12-14-14-58-39'
+    result_name = '14-2023-12-15-00-26-04'
     file_path = os.path.join(directory_path, result_name, 'results.csv')
 
     df = pd.read_csv(file_path, delimiter=';')

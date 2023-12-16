@@ -14,7 +14,7 @@ def main():
     classifiers = ['forest', 'extremely']
 
     # Create a list for max_depth values
-    max_depth = [5, 10, 20, 50, 75, 100, 110, 120, 140]
+    max_depth = [5, 10, 25, 50, 75, 100]
 
     for classifier in classifiers:
         for filename in filenames:
@@ -63,10 +63,7 @@ def main():
                         for label in hdrfdst95_data_dict.keys():
                             filtered_df_hdrfdst95 = df[
                                 (df.iloc[:, 0] == label) & (df.iloc[:, 1] == 'HDRFDST95') & (df.iloc[:, 2] == 'MEAN')]
-                            if not filtered_df_hdrfdst95.empty:
-                                hdrfdst95_data_dict[label].extend(filtered_df_hdrfdst95.iloc[:, 3].values)
-                            else:
-                                hdrfdst95_data_dict[label].append(0)  # Append 0 if no data is found
+                            hdrfdst95_data_dict[label].extend(filtered_df_hdrfdst95.iloc[:, 3].values)
 
             # Plot the average data for max_depth
             # Plot the combined data for DICE and JACRD in a separate figure
@@ -76,9 +73,9 @@ def main():
             plt.subplot(1, 2, 1)
             for label, data in dice_data_dict.items():
                 if classifier == 'forest':
-                    plt.plot(max_depth[0:3], data[0:3], label=label)
+                    plt.plot(max_depth, data[20:26], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
                 else:
-                    plt.plot(max_depth[0:3], data[0:3], label=label)
+                    plt.plot(max_depth, data[26:32], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
 
             plt.title(f'Average Dice coefficient per Max depth')
             plt.xlabel('Max depth')
@@ -90,9 +87,9 @@ def main():
             plt.subplot(1, 2, 2)
             for label, data in jacrd_data_dict.items():
                 if classifier == 'forest':
-                    plt.plot(max_depth[0:3], data[0:3], label=label)
+                    plt.plot(max_depth, data[20:26], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
                 else:
-                    plt.plot(max_depth[0:3], data[0:3], label=label)
+                    plt.plot(max_depth, data[26:32], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
 
             plt.title(f'Average Jaccard coefficient per Max depth')
             plt.xlabel('Max depth')
@@ -119,9 +116,9 @@ def main():
             plt.subplot(1, 2, 1)
             for label, data in hdrfdst_data_dict.items():
                 if classifier == 'forest':
-                    plt.plot(max_depth[0:3], data[0:3], label=label)
+                    plt.plot(max_depth, data[20:26], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
                 else:
-                    plt.plot(max_depth[0:3], data[0:3], label=label)
+                    plt.plot(max_depth, data[26:32], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
 
             plt.title(f'Average Hausdorff distance per Max depth')
             plt.xlabel('Max depth')
@@ -133,9 +130,9 @@ def main():
             plt.subplot(1, 2, 2)
             for label, data in hdrfdst95_data_dict.items():
                 if classifier == 'forest':
-                    plt.plot(max_depth[0:3], data[0:3], label=label)
+                    plt.plot(max_depth, data[20:26], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
                 else:
-                    plt.plot(max_depth[0:3], data[0:3], label=label)
+                    plt.plot(max_depth, data[26:32], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
 
             plt.title(f'Average Hausdorff distance 95th per Max depth')
             plt.xlabel('Max depth')
@@ -159,7 +156,7 @@ def main():
             # Plot the average data for nb_estimators
 
             # Create a list for nb_estimators
-            nb_estimators = [50, 100, 150, 200, 300, 500, 600, 700, 800]
+            nb_estimators = [5, 20, 50, 100, 150, 300]
 
             # Plot the combined data for DICE and JACRD in a separate figure
             plt.figure(figsize=(12, 6))
@@ -167,10 +164,10 @@ def main():
             # Subplot for DICE
             plt.subplot(1, 2, 1)
             for label, data in dice_data_dict.items():
-                if filename == 'forest':
-                    plt.plot(nb_estimators[6:11], data[6:11], label=label)
+                if classifier == 'forest':
+                    plt.plot(nb_estimators, data[8:14], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
                 else:
-                    plt.plot(nb_estimators[6:11], data[6:11], label=label)
+                    plt.plot(nb_estimators, data[14:20], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
 
             plt.title(f'Average Dice coefficient per Numbers of estimators')
             plt.xlabel('Numbers of estimators')
@@ -181,10 +178,10 @@ def main():
             # Subplot for JACRD
             plt.subplot(1, 2, 2)
             for label, data in jacrd_data_dict.items():
-                if filename == 'forest':
-                    plt.plot(nb_estimators[6:11], data[6:11], label=label)
+                if classifier == 'forest':
+                    plt.plot(nb_estimators, data[8:14], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
                 else:
-                    plt.plot(nb_estimators[6:11], data[6:11], label=label)
+                    plt.plot(nb_estimators, data[14:20], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
 
             plt.title(f'Average Jaccard coefficient per Numbers of estimators')
             plt.xlabel('Numbers of estimators')
@@ -210,10 +207,10 @@ def main():
             # Subplot for HDRFDST
             plt.subplot(1, 2, 1)
             for label, data in hdrfdst_data_dict.items():
-                if filename == 'forest':
-                    plt.plot(nb_estimators[6:11], data[6:11], label=label)
+                if classifier == 'forest':
+                    plt.plot(nb_estimators, data[8:14], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
                 else:
-                    plt.plot(nb_estimators[6:11], data[6:11], label=label)
+                    plt.plot(nb_estimators, data[14:20], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
 
             plt.title(f'Average Hausdorff distance per Numbers of estimators')
             plt.xlabel('Numbers of estimators')
@@ -224,10 +221,10 @@ def main():
             # Subplot for HDRFDST95
             plt.subplot(1, 2, 2)
             for label, data in hdrfdst95_data_dict.items():
-                if filename == 'forest':
-                    plt.plot(nb_estimators[6:11], data[6:11], label=label)
+                if classifier == 'forest':
+                    plt.plot(nb_estimators, data[8:14], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
                 else:
-                    plt.plot(nb_estimators[6:11], data[6:11], label=label)
+                    plt.plot(nb_estimators, data[14:20], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
 
 
             plt.title(f'Average Hausdorff distance 95th per Numbers of estimators')
@@ -252,7 +249,8 @@ def main():
             # Plot the average data for class weights
 
             # Create a list for class weights
-            class_weights = ['No class weight', '{1, 1, 1.5, 1.5, 1.5}', '{1, 1.01, 1.16, 1.5, 1.16}']
+            class_weights = ['No class weight', '{1, 1, 1.5, 1.5, 1.5}', '{1, 1.01, 1.16, 1.5, 1.16}',
+                             '{1, 1.25, 5.54, 15.12, 5.46}']
 
             # Plot the combined data for DICE and JACRD in a separate figure
             plt.figure(figsize=(12, 6))
@@ -260,7 +258,7 @@ def main():
             # Subplot for DICE
             plt.subplot(1, 2, 1)
             for label, data in dice_data_dict.items():
-                plt.plot(class_weights, data[0:3], label=label)  # Adjust the range [4:7] based on your data length
+                plt.plot(class_weights, data[0:4], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)  # Adjust the range [4:7] based on your data length
 
             plt.title(f'Average Dice coefficient per Class Weights')
             plt.xlabel('Class Weights')
@@ -268,14 +266,15 @@ def main():
             plt.ylabel('Average Dice coefficient')
             plt.legend()
             plt.ylim(0, 0.9)  # Set the y-axis upper limit
+            plt.xticks(rotation=45, ha='right')  # Rotate x-axis labels diagonally
 
             # Subplot for JACRD
             plt.subplot(1, 2, 2)
             for label, data in jacrd_data_dict.items():
-                if filename == 'forest':
-                    plt.plot(class_weights, data[0:3], label=label)
+                if classifier == 'forest':
+                    plt.plot(class_weights, data[0:4], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
                 else:
-                    plt.plot(class_weights, data[3:6], label=label)
+                    plt.plot(class_weights, data[4:8], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
 
             plt.title(f'Average Jaccard coefficient per Class Weights')
             plt.xlabel('Class Weights')
@@ -283,6 +282,7 @@ def main():
             plt.ylabel('Average Jaccard coefficient')
             plt.legend()
             plt.ylim(0, 0.9)  # Set the y-axis upper limit
+            plt.xticks(rotation=45, ha='right')  # Rotate x-axis labels diagonally
 
             # Add a title for the entire figure
             if filename == 'result_summary.csv' and classifier == 'forest':
@@ -302,10 +302,10 @@ def main():
             # Subplot for HDRFDST
             plt.subplot(1, 2, 1)
             for label, data in hdrfdst_data_dict.items():
-                if filename == 'forest':
-                    plt.plot(class_weights, data[0:3], label=label)
+                if classifier == 'forest':
+                    plt.plot(class_weights, data[0:4], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
                 else:
-                    plt.plot(class_weights, data[3:6], label=label)
+                    plt.plot(class_weights, data[4:8], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
 
             plt.title(f'Average Hausdorff distance per Class Weights')
             plt.xlabel('Class Weights')
@@ -313,16 +313,16 @@ def main():
             plt.ylabel('Average Hausdorff distance')
             plt.legend()
             plt.ylim(0, 90)  # Set the y-axis upper limit
+            plt.xticks(rotation=45, ha='right')  # Rotate x-axis labels diagonally
 
             # Subplot for HDRFDST95
             plt.subplot(1, 2, 2)
             for label, data in hdrfdst95_data_dict.items():
                 # Add a title for the entire figure
-                if filename == 'forest':
-                    plt.plot(class_weights, data[0:3], label=label)
+                if classifier == 'forest':
+                    plt.plot(class_weights, data[0:4], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
                 else:
-                    plt.plot(class_weights, data[3:6], label=label)
-
+                    plt.plot(class_weights, data[4:8], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
 
             plt.title(f'Average Hausdorff distance 95th per Class Weights')
             plt.xlabel('Class Weights')
@@ -330,6 +330,7 @@ def main():
             plt.ylabel('Average Hausdorff distance 95th percentile')
             plt.legend()
             plt.ylim(0, 90)  # Set the y-axis upper limit
+            plt.xticks(rotation=45, ha='right')  # Rotate x-axis labels diagonally
 
             # Add a title for the entire figure
             if filename == 'result_summary.csv' and classifier == 'forest':
@@ -344,6 +345,7 @@ def main():
             plt.tight_layout()
 
             plt.show()
+
 
 if __name__ == '__main__':
     main()
