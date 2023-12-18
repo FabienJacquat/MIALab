@@ -31,6 +31,45 @@ def main():
             # Dictionary to store data from each label for HDRFDST95
             hdrfdst95_data_dict = {label: [] for label in ['Amygdala', 'GreyMatter', 'Hippocampus', 'Thalamus', 'WhiteMatter']}
 
+
+            idx_dice = {label: [] for label in
+                                   ['Amygdala', 'GreyMatter', 'Hippocampus', 'Thalamus', 'WhiteMatter']}
+
+            idx_jacrd = {label: [] for label in
+                                   ['Amygdala', 'GreyMatter', 'Hippocampus', 'Thalamus', 'WhiteMatter']}
+
+            idx_hdrfdst = {label: [] for label in
+                                   ['Amygdala', 'GreyMatter', 'Hippocampus', 'Thalamus', 'WhiteMatter']}
+
+            idx_hdrfdst95 = {label: [] for label in
+                                   ['Amygdala', 'GreyMatter', 'Hippocampus', 'Thalamus', 'WhiteMatter']}
+
+            idx_dice_max_depth = {label: [] for label in
+                        ['Amygdala', 'GreyMatter', 'Hippocampus', 'Thalamus', 'WhiteMatter']}
+
+            idx_jacrd_max_depth = {label: [] for label in
+                         ['Amygdala', 'GreyMatter', 'Hippocampus', 'Thalamus', 'WhiteMatter']}
+
+            idx_hdrfdst_max_depth = {label: [] for label in
+                           ['Amygdala', 'GreyMatter', 'Hippocampus', 'Thalamus', 'WhiteMatter']}
+
+            idx_hdrfdst95_max_depth = {label: [] for label in
+                             ['Amygdala', 'GreyMatter', 'Hippocampus', 'Thalamus', 'WhiteMatter']}
+
+            idx_dice_nb_estimators = {label: [] for label in
+                        ['Amygdala', 'GreyMatter', 'Hippocampus', 'Thalamus', 'WhiteMatter']}
+
+            idx_jacrd_nb_estimators = {label: [] for label in
+                         ['Amygdala', 'GreyMatter', 'Hippocampus', 'Thalamus', 'WhiteMatter']}
+
+            idx_hdrfdst_nb_estimators = {label: [] for label in
+                           ['Amygdala', 'GreyMatter', 'Hippocampus', 'Thalamus', 'WhiteMatter']}
+
+            idx_hdrfdst95_nb_estimators = {label: [] for label in
+                             ['Amygdala', 'GreyMatter', 'Hippocampus', 'Thalamus', 'WhiteMatter']}
+
+
+
             for root, dirs, files in os.walk(directory_path):
                 for dir_name in dirs:
                     # Construct the full path to the CSV file in the current directory
@@ -47,23 +86,45 @@ def main():
                                 (df.iloc[:, 0] == label) & (df.iloc[:, 1] == 'DICE') & (df.iloc[:, 2] == 'MEAN')]
                             dice_data_dict[label].extend(filtered_df_dice.iloc[:, 3].values)
 
+                            # Add the index of dir_name to idx_dice
+                            for value in filtered_df_dice.iloc[:, 3].values:
+                                if value == 0 or value == float('inf'):
+                                    idx_dice[label].append(dirs.index(dir_name))
+
+
                         # Iterate over labels and filter the DataFrame for each label for JACRD
                         for label in jacrd_data_dict.keys():
                             filtered_df_jacrd = df[
                                 (df.iloc[:, 0] == label) & (df.iloc[:, 1] == 'JACRD') & (df.iloc[:, 2] == 'MEAN')]
                             jacrd_data_dict[label].extend(filtered_df_jacrd.iloc[:, 3].values)
 
-                        # Iterate over labels and filter the DataFrame for each label for HDRFDST
+                            # Add the index of dir_name to idx_dice
+                            for value in filtered_df_jacrd.iloc[:, 3].values:
+                                if value == 0 or value == float('inf'):
+                                    idx_jacrd[label].append(dirs.index(dir_name))
+
+
+                                    # Iterate over labels and filter the DataFrame for each label for HDRFDST
                         for label in hdrfdst_data_dict.keys():
                             filtered_df_hdrfdst = df[
                                 (df.iloc[:, 0] == label) & (df.iloc[:, 1] == 'HDRFDST') & (df.iloc[:, 2] == 'MEAN')]
                             hdrfdst_data_dict[label].extend(filtered_df_hdrfdst.iloc[:, 3].values)
+
+                            # Add the index of dir_name to idx_dice
+                            for value in filtered_df_hdrfdst.iloc[:, 3].values:
+                                if value == 0 or value == float('inf'):
+                                    idx_hdrfdst[label].append(dirs.index(dir_name))
 
                         # Iterate over labels and filter the DataFrame for each label for HDRFDST95
                         for label in hdrfdst95_data_dict.keys():
                             filtered_df_hdrfdst95 = df[
                                 (df.iloc[:, 0] == label) & (df.iloc[:, 1] == 'HDRFDST95') & (df.iloc[:, 2] == 'MEAN')]
                             hdrfdst95_data_dict[label].extend(filtered_df_hdrfdst95.iloc[:, 3].values)
+
+                            # Add the index of dir_name to idx_dice
+                            for value in filtered_df_hdrfdst95.iloc[:, 3].values:
+                                if value == 0 or value == float('inf'):
+                                    idx_hdrfdst95[label].append(dirs.index(dir_name))
 
             # Plot the average data for max_depth
             # Plot the combined data for DICE and JACRD in a separate figure
@@ -73,9 +134,48 @@ def main():
             plt.subplot(1, 2, 1)
             for label, data in dice_data_dict.items():
                 if classifier == 'forest':
-                    plt.plot(max_depth, data[20:26], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
+
+                    # Filter data based on idx_dice[label]
+                    filtered_data = [value for index, value in enumerate(data) if
+                                     index not in idx_dice[label] or (index in idx_dice[label] and not (19 <= index < 25))]
+
+                    # Subtract 19 from every element in idx_dice[label]
+                    idx_dice_max_depth[label] = [index - 19 for index in idx_dice[label]]
+
+                    # Remove negative values from idx_dice_max_depth[label]
+                    idx_dice_max_depth[label] = [index for index in idx_dice_max_depth[label] if index >= 0]
+
+                    # Filter max_depth based on idx_dice_max_depth[label]
+                    filtered_max_depth = [value for index, value in enumerate(max_depth) if
+                                          index not in idx_dice_max_depth[label]]
+
+                    # Create end_data by filtering elements between 0 and 25, and calculate its length
+                    end_data = 25 - len([x for x in idx_dice[label] if isinstance(x, int) and 19 <= x < 25])
+
+                    # Plot the filtered data and filtered_max_depth
+                    plt.plot(filtered_max_depth, filtered_data[19:end_data], label=label, marker='x', markersize=6,
+                             linestyle='-', linewidth=1)
                 else:
-                    plt.plot(max_depth, data[26:32], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
+                    # Filter data based on idx_dice[label]
+                    filtered_data = [value for index, value in enumerate(data) if
+                                     index not in idx_dice[label] or (index in idx_dice[label] and not (25 <= index < 31))]
+
+                    # Subtract 19 from every element in idx_dice[label]
+                    idx_dice_max_depth[label] = [index - 25 for index in idx_dice[label]]
+
+                    # Remove negative values from idx_dice_max_depth[label]
+                    idx_dice_max_depth[label] = [index for index in idx_dice_max_depth[label] if index >= 0]
+
+                    # Filter max_depth based on idx_dice_max_depth[label]
+                    filtered_max_depth = [value for index, value in enumerate(max_depth) if
+                                          index not in idx_dice_max_depth[label]]
+
+                    # Create end_data by filtering elements between 0 and 25, and calculate its length
+                    end_data = 31 - len([x for x in idx_dice[label] if isinstance(x, int) and 25 <= x < 31])
+
+                    # Plot the filtered data and filtered_max_depth
+                    plt.plot(filtered_max_depth, filtered_data[25:end_data], label=label, marker='x', markersize=6,
+                             linestyle='-', linewidth=1)
 
             plt.title(f'Average Dice coefficient per Max depth')
             plt.xlabel('Max depth')
@@ -87,15 +187,55 @@ def main():
             plt.subplot(1, 2, 2)
             for label, data in jacrd_data_dict.items():
                 if classifier == 'forest':
-                    plt.plot(max_depth, data[20:26], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
+
+                    # Filter data based on idx_jacrd[label]
+                    filtered_data = [value for index, value in enumerate(data) if
+                                     index not in idx_jacrd[label] or (index in idx_jacrd[label] and not (19 <= index < 25))]
+
+                    # Subtract 19 from every element in idx_jacrd[label]
+                    idx_jacrd_max_depth[label] = [index - 19 for index in idx_jacrd[label]]
+
+                    # Remove negative values from idx_jacrd_max_depth[label]
+                    idx_jacrd_max_depth[label] = [index for index in idx_jacrd_max_depth[label] if index >= 0]
+
+                    # Filter max_depth based on idx_jacrd_max_depth[label]
+                    filtered_max_depth = [value for index, value in enumerate(max_depth) if
+                                          index not in idx_jacrd_max_depth[label]]
+
+                    # Create end_data by filtering elements between 0 and 25, and calculate its length
+                    end_data = 25 - len([x for x in idx_jacrd[label] if isinstance(x, int) and 19 <= x < 25])
+
+                    # Plot the filtered data and filtered_max_depth
+                    plt.plot(filtered_max_depth, filtered_data[19:end_data], label=label, marker='x', markersize=6,
+                             linestyle='-', linewidth=1)
                 else:
-                    plt.plot(max_depth, data[26:32], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
+                    # Filter data based on idx_jacrd[label]
+                    filtered_data = [value for index, value in enumerate(data) if
+                                     index not in idx_jacrd[label] or (index in idx_jacrd[label] and not (25 <= index < 31))]
+
+                    # Subtract 19 from every element in idx_jacrd[label]
+                    idx_jacrd_max_depth[label] = [index - 25 for index in idx_jacrd[label]]
+
+                    # Remove negative values from idx_jacrd_max_depth[label]
+                    idx_jacrd_max_depth[label] = [index for index in idx_jacrd_max_depth[label] if index >= 0]
+
+                    # Filter max_depth based on idx_jacrd_max_depth[label]
+                    filtered_max_depth = [value for index, value in enumerate(max_depth) if
+                                          index not in idx_jacrd_max_depth[label]]
+
+                    # Create end_data by filtering elements between 0 and 25, and calculate its length
+                    end_data = 31 - len([x for x in idx_jacrd[label] if isinstance(x, int) and 25 <= x < 31])
+
+                    # Plot the filtered data and filtered_max_depth
+                    plt.plot(filtered_max_depth, filtered_data[25:end_data], label=label, marker='x', markersize=6,
+                             linestyle='-', linewidth=1)
 
             plt.title(f'Average Jaccard coefficient per Max depth')
             plt.xlabel('Max depth')
             plt.ylabel('Average Jaccard coefficient')
             plt.legend()
             plt.ylim(0, 0.9)  # Set the y-axis upper limit
+
 
             # Add a title for the entire figure
             if filename == 'result_summary.csv' and classifier == 'forest':
@@ -116,9 +256,48 @@ def main():
             plt.subplot(1, 2, 1)
             for label, data in hdrfdst_data_dict.items():
                 if classifier == 'forest':
-                    plt.plot(max_depth, data[20:26], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
+
+                    # Filter data based on idx_hdrfdst[label]
+                    filtered_data = [value for index, value in enumerate(data) if
+                                     index not in idx_hdrfdst[label] or (index in idx_hdrfdst[label] and not (19 <= index < 25))]
+
+                    # Subtract 19 from every element in idx_hdrfdst[label]
+                    idx_hdrfdst_max_depth[label] = [index - 19 for index in idx_hdrfdst[label]]
+
+                    # Remove negative values from idx_hdrfdst_max_depth[label]
+                    idx_hdrfdst_max_depth[label] = [index for index in idx_hdrfdst_max_depth[label] if index >= 0]
+
+                    # Filter max_depth based on idx_hdrfdst_max_depth[label]
+                    filtered_max_depth = [value for index, value in enumerate(max_depth) if
+                                          index not in idx_hdrfdst_max_depth[label]]
+
+                    # Create end_data by filtering elements between 0 and 25, and calculate its length
+                    end_data = 25 - len([x for x in idx_hdrfdst[label] if isinstance(x, int) and 19 <= x < 25])
+
+                    # Plot the filtered data and filtered_max_depth
+                    plt.plot(filtered_max_depth, filtered_data[19:end_data], label=label, marker='x', markersize=6,
+                             linestyle='-', linewidth=1)
                 else:
-                    plt.plot(max_depth, data[26:32], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
+                    # Filter data based on idx_hdrfdst[label]
+                    filtered_data = [value for index, value in enumerate(data) if
+                                     index not in idx_hdrfdst[label] or (index in idx_hdrfdst[label] and not (25 <= index < 31))]
+
+                    # Subtract 19 from every element in idx_hdrfdst[label]
+                    idx_hdrfdst_max_depth[label] = [index - 25 for index in idx_hdrfdst[label]]
+
+                    # Remove negative values from idx_hdrfdst_max_depth[label]
+                    idx_dice_max_depth[label] = [index for index in idx_hdrfdst_max_depth[label] if index >= 0]
+
+                    # Filter max_depth based on idx_hdrfdst_max_depth[label]
+                    filtered_max_depth = [value for index, value in enumerate(max_depth) if
+                                          index not in idx_hdrfdst_max_depth[label]]
+
+                    # Create end_data by filtering elements between 0 and 25, and calculate its length
+                    end_data = 31 - len([x for x in idx_hdrfdst[label] if isinstance(x, int) and 25 <= x < 31])
+
+                    # Plot the filtered data and filtered_max_depth
+                    plt.plot(filtered_max_depth, filtered_data[25:end_data], label=label, marker='x', markersize=6,
+                             linestyle='-', linewidth=1)
 
             plt.title(f'Average Hausdorff distance per Max depth')
             plt.xlabel('Max depth')
@@ -130,9 +309,48 @@ def main():
             plt.subplot(1, 2, 2)
             for label, data in hdrfdst95_data_dict.items():
                 if classifier == 'forest':
-                    plt.plot(max_depth, data[20:26], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
+
+                    # Filter data based on idx_hdrfdst95[label]
+                    filtered_data = [value for index, value in enumerate(data) if
+                                     index not in idx_hdrfdst95[label] or (index in idx_hdrfdst95[label] and not (19 <= index < 25))]
+
+                    # Subtract 19 from every element in idx_hdrfdst95[label]
+                    idx_hdrfdst95_max_depth[label] = [index - 19 for index in idx_hdrfdst95[label]]
+
+                    # Remove negative values from idx_hdrfdst95_max_depth[label]
+                    idx_hdrfdst95_max_depth[label] = [index for index in idx_hdrfdst95_max_depth[label] if index >= 0]
+
+                    # Filter max_depth based on idx_hdrfdst95_max_depth[label]
+                    filtered_max_depth = [value for index, value in enumerate(max_depth) if
+                                          index not in idx_hdrfdst95_max_depth[label]]
+
+                    # Create end_data by filtering elements between 0 and 25, and calculate its length
+                    end_data = 25 - len([x for x in idx_hdrfdst95[label] if isinstance(x, int) and 19 <= x < 25])
+
+                    # Plot the filtered data and filtered_max_depth
+                    plt.plot(filtered_max_depth, filtered_data[19:end_data], label=label, marker='x', markersize=6,
+                             linestyle='-', linewidth=1)
                 else:
-                    plt.plot(max_depth, data[26:32], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
+                    # Filter data based on idx_hdrfdst95[label]
+                    filtered_data = [value for index, value in enumerate(data) if
+                                     index not in idx_hdrfdst95[label] or (index in idx_hdrfdst95[label] and not (25 <= index < 31))]
+
+                    # Subtract 19 from every element in idx_hdrfdst95[label]
+                    idx_hdrfdst95_max_depth[label] = [index - 25 for index in idx_hdrfdst95[label]]
+
+                    # Remove negative values from idx_hdrfdst95_max_depth[label]
+                    idx_hdrfdst95_max_depth[label] = [index for index in idx_hdrfdst95_max_depth[label] if index >= 0]
+
+                    # Filter max_depth based on idx_hdrfdst95_max_depth[label]
+                    filtered_max_depth = [value for index, value in enumerate(max_depth) if
+                                          index not in idx_hdrfdst95_max_depth[label]]
+
+                    # Create end_data by filtering elements between 0 and 25, and calculate its length
+                    end_data = 31 - len([x for x in idx_hdrfdst95[label] if isinstance(x, int) and 25 <= x < 31])
+
+                    # Plot the filtered data and filtered_max_depth
+                    plt.plot(filtered_max_depth, filtered_data[25:end_data], label=label, marker='x', markersize=6,
+                             linestyle='-', linewidth=1)
 
             plt.title(f'Average Hausdorff distance 95th per Max depth')
             plt.xlabel('Max depth')
@@ -165,9 +383,48 @@ def main():
             plt.subplot(1, 2, 1)
             for label, data in dice_data_dict.items():
                 if classifier == 'forest':
-                    plt.plot(nb_estimators, data[8:14], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
+
+                    # Filter data based on idx_dice[label]
+                    filtered_data = [value for index, value in enumerate(data) if
+                                     index not in idx_dice[label] or (index in idx_dice[label] and not (7 <= index < 13))]
+
+                    # Subtract 19 from every element in idx_dice[label]
+                    idx_dice_nb_estimators[label] = [index - 7 for index in idx_dice[label]]
+
+                    # Remove negative values from idx_dice_nb_estimators[label]
+                    idx_dice_nb_estimators[label] = [index for index in idx_dice_nb_estimators[label] if index >= 0]
+
+                    # Filter nb_estimators based on idx_dice_nb_estimators[label]
+                    filtered_nb_estimators = [value for index, value in enumerate(nb_estimators) if
+                                          index not in idx_dice_nb_estimators[label]]
+
+                    # Create end_data by filtering elements between 0 and 25, and calculate its length
+                    end_data = 13 - len([x for x in idx_dice[label] if isinstance(x, int) and 7 <= x < 13])
+
+                    # Plot the filtered data and filtered_nb_estimators
+                    plt.plot(filtered_nb_estimators, filtered_data[7:end_data], label=label, marker='x', markersize=6,
+                             linestyle='-', linewidth=1)
                 else:
-                    plt.plot(nb_estimators, data[14:20], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
+                    # Filter data based on idx_dice[label]
+                    filtered_data = [value for index, value in enumerate(data) if
+                                     index not in idx_dice[label] or (index in idx_dice[label] and not (13 <= index < 19))]
+
+                    # Subtract 19 from every element in idx_dice[label]
+                    idx_dice_nb_estimators[label] = [index - 13 for index in idx_dice[label]]
+
+                    # Remove negative values from idx_dice_nb_estimators[label]
+                    idx_dice_nb_estimators[label] = [index for index in idx_dice_nb_estimators[label] if index >= 0]
+
+                    # Filter nb_estimators based on idx_dice_nb_estimators[label]
+                    filtered_nb_estimators = [value for index, value in enumerate(nb_estimators) if
+                                          index not in idx_dice_nb_estimators[label]]
+
+                    # Create end_data by filtering elements between 0 and 25, and calculate its length
+                    end_data = 19 - len([x for x in idx_dice[label] if isinstance(x, int) and 13 <= x < 19])
+
+                    # Plot the filtered data and filtered_nb_estimators
+                    plt.plot(filtered_nb_estimators, filtered_data[13:end_data], label=label, marker='x', markersize=6,
+                             linestyle='-', linewidth=1)
 
             plt.title(f'Average Dice coefficient per Numbers of estimators')
             plt.xlabel('Numbers of estimators')
@@ -179,9 +436,48 @@ def main():
             plt.subplot(1, 2, 2)
             for label, data in jacrd_data_dict.items():
                 if classifier == 'forest':
-                    plt.plot(nb_estimators, data[8:14], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
+
+                    # Filter data based on idx_jacrd[label]
+                    filtered_data = [value for index, value in enumerate(data) if
+                                     index not in idx_jacrd[label] or (index in idx_jacrd[label] and not (7 <= index < 13))]
+
+                    # Subtract 19 from every element in idx_jacrd[label]
+                    idx_jacrd_nb_estimators[label] = [index - 7 for index in idx_jacrd[label]]
+
+                    # Remove negative values from idx_jacrd_nb_estimators[label]
+                    idx_jacrd_nb_estimators[label] = [index for index in idx_jacrd_nb_estimators[label] if index >= 0]
+
+                    # Filter nb_estimators based on idx_jacrd_nb_estimators[label]
+                    filtered_nb_estimators = [value for index, value in enumerate(nb_estimators) if
+                                          index not in idx_jacrd_nb_estimators[label]]
+
+                    # Create end_data by filtering elements between 0 and 25, and calculate its length
+                    end_data = 13 - len([x for x in idx_jacrd[label] if isinstance(x, int) and 7 <= x < 13])
+
+                    # Plot the filtered data and filtered_nb_estimators
+                    plt.plot(filtered_nb_estimators, filtered_data[7:end_data], label=label, marker='x', markersize=6,
+                             linestyle='-', linewidth=1)
                 else:
-                    plt.plot(nb_estimators, data[14:20], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
+                    # Filter data based on idx_jacrd[label]
+                    filtered_data = [value for index, value in enumerate(data) if
+                                     index not in idx_jacrd[label] or (index in idx_jacrd[label] and not (13 <= index < 19))]
+
+                    # Subtract 19 from every element in idx_jacrd[label]
+                    idx_jacrd_nb_estimators[label] = [index - 13 for index in idx_jacrd[label]]
+
+                    # Remove negative values from idx_jacrd_nb_estimators[label]
+                    idx_jacrd_nb_estimators[label] = [index for index in idx_jacrd_nb_estimators[label] if index >= 0]
+
+                    # Filter nb_estimators based on idx_jacrd_nb_estimators[label]
+                    filtered_nb_estimators = [value for index, value in enumerate(nb_estimators) if
+                                          index not in idx_jacrd_nb_estimators[label]]
+
+                    # Create end_data by filtering elements between 0 and 25, and calculate its length
+                    end_data = 19 - len([x for x in idx_jacrd[label] if isinstance(x, int) and 13 <= x < 19])
+
+                    # Plot the filtered data and filtered_nb_estimators
+                    plt.plot(filtered_nb_estimators, filtered_data[13:end_data], label=label, marker='x', markersize=6,
+                             linestyle='-', linewidth=1)
 
             plt.title(f'Average Jaccard coefficient per Numbers of estimators')
             plt.xlabel('Numbers of estimators')
@@ -208,9 +504,48 @@ def main():
             plt.subplot(1, 2, 1)
             for label, data in hdrfdst_data_dict.items():
                 if classifier == 'forest':
-                    plt.plot(nb_estimators, data[8:14], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
+
+                    # Filter data based on idx_hdrfdst[label]
+                    filtered_data = [value for index, value in enumerate(data) if
+                                     index not in idx_hdrfdst[label] or (index in idx_hdrfdst[label] and not (7 <= index < 13))]
+
+                    # Subtract 19 from every element in idx_hdrfdst[label]
+                    idx_hdrfdst_nb_estimators[label] = [index - 7 for index in idx_hdrfdst[label]]
+
+                    # Remove negative values from idx_hdrfdst_nb_estimators[label]
+                    idx_hdrfdst_nb_estimators[label] = [index for index in idx_hdrfdst_nb_estimators[label] if index >= 0]
+
+                    # Filter nb_estimators based on idx_hdrfdst_nb_estimators[label]
+                    filtered_nb_estimators = [value for index, value in enumerate(nb_estimators) if
+                                          index not in idx_hdrfdst_nb_estimators[label]]
+
+                    # Create end_data by filtering elements between 0 and 25, and calculate its length
+                    end_data = 13 - len([x for x in idx_hdrfdst[label] if isinstance(x, int) and 7 <= x < 13])
+
+                    # Plot the filtered data and filtered_nb_estimators
+                    plt.plot(filtered_nb_estimators, filtered_data[7:end_data], label=label, marker='x', markersize=6,
+                             linestyle='-', linewidth=1)
                 else:
-                    plt.plot(nb_estimators, data[14:20], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
+                    # Filter data based on idx_hdrfdst[label]
+                    filtered_data = [value for index, value in enumerate(data) if
+                                     index not in idx_hdrfdst[label] or (index in idx_hdrfdst[label] and not (13 <= index < 19))]
+
+                    # Subtract 19 from every element in idx_hdrfdst[label]
+                    idx_hdrfdst_nb_estimators[label] = [index - 13 for index in idx_hdrfdst[label]]
+
+                    # Remove negative values from idx_hdrfdst_nb_estimators[label]
+                    idx_dice_nb_estimators[label] = [index for index in idx_hdrfdst_nb_estimators[label] if index >= 0]
+
+                    # Filter max_depth based on idx_hdrfdst_nb_estimators[label]
+                    filtered_nb_estimators = [value for index, value in enumerate(nb_estimators) if
+                                          index not in idx_hdrfdst_nb_estimators[label]]
+
+                    # Create end_data by filtering elements between 0 and 25, and calculate its length
+                    end_data = 19 - len([x for x in idx_hdrfdst[label] if isinstance(x, int) and 13 <= x < 19])
+
+                    # Plot the filtered data and filtered_nb_estimators
+                    plt.plot(filtered_nb_estimators, filtered_data[13:end_data], label=label, marker='x', markersize=6,
+                             linestyle='-', linewidth=1)
 
             plt.title(f'Average Hausdorff distance per Numbers of estimators')
             plt.xlabel('Numbers of estimators')
@@ -222,9 +557,48 @@ def main():
             plt.subplot(1, 2, 2)
             for label, data in hdrfdst95_data_dict.items():
                 if classifier == 'forest':
-                    plt.plot(nb_estimators, data[8:14], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
+
+                    # Filter data based on idx_hdrfdst95[label]
+                    filtered_data = [value for index, value in enumerate(data) if
+                                     index not in idx_hdrfdst95[label] or (index in idx_hdrfdst95[label] and not (7 <= index < 13))]
+
+                    # Subtract 19 from every element in idx_hdrfdst95[label]
+                    idx_hdrfdst95_nb_estimators[label] = [index - 7 for index in idx_hdrfdst95[label]]
+
+                    # Remove negative values from idx_hdrfdst95_nb_estimators[label]
+                    idx_hdrfdst95_nb_estimators[label] = [index for index in idx_hdrfdst95_nb_estimators[label] if index > 0]
+
+                    # Filter nb_estimators based on idx_hdrfdst95_nb_estimators[label]
+                    filtered_nb_estimators = [value for index, value in enumerate(nb_estimators) if
+                                          index not in idx_hdrfdst95_nb_estimators[label]]
+
+                    # Create end_data by filtering elements between 0 and 25, and calculate its length
+                    end_data = 13 - len([x for x in idx_hdrfdst95[label] if isinstance(x, int) and 7 <= x < 13])
+
+                    # Plot the filtered data and filtered_nb_estimators
+                    plt.plot(filtered_nb_estimators, filtered_data[7:end_data], label=label, marker='x', markersize=6,
+                             linestyle='-', linewidth=1)
                 else:
-                    plt.plot(nb_estimators, data[14:20], label=label, marker='x', markersize=6, linestyle='-', linewidth=1)
+                    # Filter data based on idx_hdrfdst95[label]
+                    filtered_data = [value for index, value in enumerate(data) if
+                                     index not in idx_hdrfdst95[label] or (index in idx_hdrfdst95[label] and not (13 <= index < 19))]
+
+                    # Subtract 19 from every element in idx_hdrfdst95[label]
+                    idx_hdrfdst95_nb_estimators[label] = [index - 13 for index in idx_hdrfdst95[label]]
+
+                    # Remove negative values from idx_hdrfdst95_nb_estimators[label]
+                    idx_hdrfdst95_nb_estimators[label] = [index for index in idx_hdrfdst95_nb_estimators[label] if index >= 0]
+
+                    # Filter nb_estimators based on idx_hdrfdst95_nb_estimators[label]
+                    filtered_nb_estimators = [value for index, value in enumerate(nb_estimators) if
+                                          index not in idx_hdrfdst95_nb_estimators[label]]
+
+                    # Create end_data by filtering elements between 0 and 25, and calculate its length
+                    end_data = 19 - len([x for x in idx_hdrfdst95[label] if isinstance(x, int) and 13 <= x < 19])
+
+                    # Plot the filtered data and filtered_nb_estimators
+                    plt.plot(filtered_nb_estimators, filtered_data[13:end_data], label=label, marker='x', markersize=6,
+                             linestyle='-', linewidth=1)
 
 
             plt.title(f'Average Hausdorff distance 95th per Numbers of estimators')
