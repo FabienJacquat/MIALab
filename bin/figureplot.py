@@ -5,7 +5,7 @@ import os
 
 def main():
 
-    directory_path = r'C:\Users\pierr\Desktop\Cours\BME3\Medical_Image_Analysis_Lab\MIALab_Fabien\bin\mia-result'
+    directory_path = r'..\bin\mia-result'
 
     # List of filenames
     filenames = ['result_summary.csv', 'result_summary_PP.csv']

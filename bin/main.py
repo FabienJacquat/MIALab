@@ -7,6 +7,7 @@ import datetime
 import os
 import sys
 import timeit
+import warnings
 
 import SimpleITK as sitk
 import sklearn.ensemble as sk_ensemble
@@ -120,7 +121,7 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
     # initialize evaluator
     evaluator = putil.init_evaluator()
 
-    # crawl the training image directories
+    # crawl the testing image directories
     crawler = futil.FileSystemDataCrawler(data_test_dir,
                                           LOADING_KEYS,
                                           futil.BrainImageFilePathGenerator(),
@@ -166,6 +167,7 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
     os.makedirs(result_dir, exist_ok=True)
     result_file = os.path.join(result_dir, 'results.csv')
     writer.CSVWriter(result_file).write(evaluator.results)
+
     print('\nSubject-wise results...')
     writer.ConsoleWriter().write(evaluator.results)
 
