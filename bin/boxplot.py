@@ -9,9 +9,9 @@ def main():
     directory_path = r'..\bin\mia-result'
 
     # Get the file paths of two tests you want to compare
-    result_name1 = '0-2023-12-14-16-28-41'
+    result_name1 = '32-2023-12-16-12-06-46'
     file_path1 = os.path.join(directory_path, result_name1, 'results.csv')
-    result_name2 = '1-2023-12-14-16-03-39'
+    result_name2 = '33-2023-12-16-14-17-10'
     file_path2 = os.path.join(directory_path, result_name2, 'results.csv')
 
     # Filter dataset 1 by processing groups
@@ -25,8 +25,8 @@ def main():
     df2_PP = df2[df2['SUBJECT'].str.contains('PP')]
 
     # Choose which datasets you want to compare
-    data1 = df1_notPP
-    data2 = df2_notPP
+    data1 = df1_PP
+    data2 = df2_PP
 
     # List which metrics you want to compare
     dice_jaccard_metrics = ['DICE', 'JACRD']
@@ -87,16 +87,16 @@ def main():
         axs_hausdorff[i].set_xticklabels(custom_labels)
 
     # Create legend elements for each figure
-    legend_elements_dice = [plt.Rectangle((0, 0), 1, 1, color=color_data1, label='data1'),
-                            plt.Rectangle((0, 0), 1, 1, color=color_data2, label='data2')]
-    legend_elements_hausdorff = [plt.Rectangle((0, 0), 1, 1, color=color_data1, label='data1'),
-                                 plt.Rectangle((0, 0), 1, 1, color=color_data2, label='data2')]
+    legend_elements_dice = [plt.Rectangle((0, 0), 1, 1, color=color_data1, label='Test 32 with PP'),
+                            plt.Rectangle((0, 0), 1, 1, color=color_data2, label='Test 33 with PP')]
+    legend_elements_hausdorff = [plt.Rectangle((0, 0), 1, 1, color=color_data1, label='Test 32 with PP'),
+                                 plt.Rectangle((0, 0), 1, 1, color=color_data2, label='Test 33 with PP')]
 
     # Show legend for Dice/Jaccard figure
-    fig_dice_jaccard.legend(handles=legend_elements_dice, loc='upper left')
+    fig_dice_jaccard.legend(handles=legend_elements_dice, loc='lower center')
 
     # Show legend for Hausdorff figure
-    fig_hausdorff.legend(handles=legend_elements_hausdorff, loc='upper left')
+    fig_hausdorff.legend(handles=legend_elements_hausdorff, loc='lower center')
 
     plt.show()
 
